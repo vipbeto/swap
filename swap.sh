@@ -1,41 +1,40 @@
-#!/bin/sh
+#!/bin/bash
 
-# Do argument checks
-if [ ! "$#" -ge 1 ]; then
-    echo "Usage: $0 {size}"
-    echo "Example: $0 4G"
-    echo "(Default path: /swapfile)"
-    echo "Optional path: Usage: $0 {size} {path}"
+# Verifica argumentos
+if [ "$#" -lt 1 ]; then
+    echo "Uso: $0 {tamanho}"
+    echo "Exemplo: $0 4G"
+    echo "(Caminho padrão: /swapfile)"
+    echo "Caminho opcional: Uso: $0 {tamanho} {caminho}"
     exit 1
 fi
 
-
-## Intro
-echo "Welcome to Swap setup script! This script will automatically setup a swap file and enable it."
-echo "Root access is required, please run as root or enter sudo password." 
-echo "Source is @ https://github.com/adfastltda/swap" 
+## Introdução
+echo "Bem-vindo ao script de configuração de Swap! Este script configurará automaticamente um arquivo de swap e o ativará."
+echo "Este script deve ser executado como root." 
+echo "Source: @ https://github.com/adfastltda/swap"
 echo
 
-## Setup variables
+## Definir variáveis
 
-# Get size from first argument
+# Tamanho do swap a partir do primeiro argumento
 SWAP_SIZE=$1
 
-# Get path from second argument (default to /swapfile)
+# Caminho do swap a partir do segundo argumento (padrão para /swapfile)
 SWAP_PATH="/swapfile"
 if [ ! -z "$2" ]; then
     SWAP_PATH=$2
 fi
 
+## Executar
+echo "Alocando $SWAP_SIZE em $SWAP_PATH..."
+fallocate -l $SWAP_SIZE $SWAP_PATH  # Alocar tamanho
+chmod 600 $SWAP_PATH                # Ajustar permissão correta
+mkswap $SWAP_PATH                   # Configurar swap         
+swapon $SWAP_PATH                   # Ativar swap
+echo "$SWAP_PATH   none    swap    sw    0   0" | tee -a /etc/fstab  # Adicionar ao fstab para ativar automaticamente
 
-## Run
-sudo fallocate -l $SWAP_SIZE $SWAP_PATH  # Allocate size
-sudo chmod 600 $SWAP_PATH                # Set proper permission
-sudo mkswap $SWAP_PATH                   # Setup swap         
-sudo swapon $SWAP_PATH                   # Enable swap
-echo "$SWAP_PATH   none    swap    sw    0   0" | sudo tee /etc/fstab -a # Add to fstab
-
-## Outro
+## Finalização
 
 echo
-echo "Done! You now have a $SWAP_SIZE swap file at $SWAP_PATH"
+echo "Concluído! Agora você tem um arquivo de swap de $SWAP_SIZE em $SWAP_PATH."
